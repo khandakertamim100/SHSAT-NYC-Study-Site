@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LocalPrep — NYC SHSAT Prep</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg"></div>
+    <header class="site-header">
+      <div class="container header-row">
+        <a class="brand" href="#/">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-text">LocalPrep</span>
+        </a>
+
+        <nav class="nav">
+          <a class="nav-link" href="#/dashboard">Dashboard</a>
+          <a class="nav-link" href="#/practice-hub">Practice</a>
+          <a class="nav-link" href="#/drill">Drill</a>
+          <a class="nav-link" href="#/history">History</a>
+          <a class="nav-link" href="#/mistakes">Mistakes</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="btn btn-ghost" id="signInOutBtn" type="button">Sign in</button>
+          <a class="btn btn-solid" id="headerPracticeCta" href="#/login?next=/practice-hub">Start practice</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="app" class="site-main"></main>
+
+    <template id="tpl-landing">
+      <section class="container hero">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            Free NYC SHSAT practice,
+            <span class="hero-title-muted">built for focus.</span>
+          </h1>
+          <p class="hero-subtitle">
+            Full timed exams (114 questions), passage-based reading, topic drills, and score history — clean,
+            minimal, and fast.
+          </p>
+          <div class="hero-cta">
+            <a class="btn btn-solid btn-lg" id="heroPrimaryCta" href="#/login?next=/practice-hub">Start practicing free</a>
+            <a class="btn btn-ghost btn-lg" id="heroSecondaryCta" href="#/login?next=/dashboard">View dashboard</a>
+            <p class="hero-note">Timed tests and saved progress require Google sign-in (Convex Auth in production).</p>
+          </div>
+        </div>
+
+        <div class="hero-panels">
+          <div class="panel panel-dark">
+            <div class="panel-top">
+              <div class="chip">SHSAT</div>
+              <div class="chip chip-muted">NYC</div>
+              <div class="chip chip-muted">114 Q</div>
+            </div>
+            <div class="panel-title">Full practice test</div>
+            <div class="panel-meta">3 hours • 57 ELA + 57 Math • autosave • passages stay on screen</div>
+            <div class="panel-actions">
+              <a class="btn btn-solid" id="panelStartTest" href="#/login?next=/test-select">Choose an exam</a>
+              <a class="btn btn-ghost" id="panelDrill" href="#/login?next=/drill">Topic drills</a>
+            </div>
+            <div class="panel-divider"></div>
+            <div class="panel-kpis">
+              <div class="kpi">
+                <div class="kpi-label">Example total</div>
+                <div class="kpi-value">82 / 114</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">ELA / Math</div>
+                <div class="kpi-value">44 / 38</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Forms</div>
+                <div class="kpi-value">A, B…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel panel-light">
+            <div class="panel-badge">Mistake log</div>
+            <div class="panel-title">Turn wrong answers into wins.</div>
+            <p class="panel-copy">
+              Save missed questions, drill them later, and resolve after two consecutive correct attempts.
+            </p>
+            <div class="panel-actions">
+              <a class="btn btn-solid" id="panelMistakes" href="#/login?next=/mistakes">Mistake log</a>
+              <a class="btn btn-ghost" id="panelHub" href="#/login?next=/practice-hub">Practice hub</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container features">
+        <div class="feature">
+          <div class="icon">⏱</div>
+          <div>
+            <div class="feature-title">114-question timed exam</div>
+            <div class="feature-desc">3-hour countdown, ELA then Math, passage reading groups, flags, submit confirmation.</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">🧠</div>
+          <div>
+            <div class="feature-title">Topic drills</div>
+            <div class="feature-desc">SHSAT taxonomy — circles, permutations, scrambled paragraphs, and more.</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">📈</div>
+          <div>
+            <div class="feature-title">Scores & history</div>
+            <div class="feature-desc">ELA and Math out of 57 each, total out of 114, with exam name on every row.</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">📌</div>
+          <div>
+            <div class="feature-title">Mistake log</div>
+            <div class="feature-desc">Review weak spots and drill them until resolved.</div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="container footer">
+        <div class="footer-row">
+          <div class="footer-left">
+            <div class="footer-brand">LocalPrep</div>
+            <div class="footer-muted">Free NYC test prep — clean, fast, focused.</div>
+          </div>
+          <div class="footer-links">
+            <a href="#/login" class="footer-link">Sign in</a>
+            <a href="#/login?next=/test-select" class="footer-link">Practice tests</a>
+            <a href="#/login?next=/drill" class="footer-link">Drill mode</a>
+          </div>
+        </div>
+      </footer>
+    </template>
+
+    <template id="tpl-login">
+      <div class="login-page">
+        <section class="container login-inner">
+          <div class="card login-card">
+            <h2 class="page-title login-title">Sign in</h2>
+            <p class="page-subtitle login-sub">Continue with Google — same flow as production Convex Auth.</p>
+            <div class="login-actions">
+              <button class="btn btn-solid btn-lg w-full" type="button" id="googleSignInBtn">Sign in with Google</button>
+            </div>
+            <p class="card-muted login-foot">Demo only: this button stores a session in your browser. Replace with Convex Auth.</p>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <template id="tpl-practice-hub">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Practice hub</h2>
+            <p class="page-subtitle">Choose drills or a full timed exam.</p>
+          </div>
+          <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+        </div>
+        <div class="hub-grid">
+          <a class="hub-card" href="#/drill">
+            <div class="hub-card-kicker">Practice questions</div>
+            <div class="hub-card-title">Topic drills</div>
+            <p class="hub-card-desc">Pick Math or ELA and a specific topic. Immediate feedback after each question.</p>
+            <span class="hub-card-cta">Open drills →</span>
+          </a>
+          <a class="hub-card hub-card-dark" href="#/test-select">
+            <div class="hub-card-kicker">Practice tests</div>
+            <div class="hub-card-title">Full timed exams</div>
+            <p class="hub-card-desc">114 questions, 3 hours — official-style ELA (with passages) and Math.</p>
+            <span class="hub-card-cta">Select an exam →</span>
+          </a>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-test-select">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Choose a practice test</h2>
+            <p class="page-subtitle">Each exam is 114 questions (57 ELA + 57 Math), 3 hours.</p>
+          </div>
+          <div class="row-actions">
+            <a class="btn btn-ghost" href="#/practice-hub">Back</a>
+            <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+          </div>
+        </div>
+        <div class="exam-grid" id="examSelectGrid"></div>
+      </section>
+    </template>
+
+    <template id="tpl-dashboard">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Dashboard</h2>
+            <p class="page-subtitle"><span id="welcomeName"></span>Pick up where you left off.</p>
+          </div>
+          <div class="row-actions">
+            <div class="chip">SHSAT</div>
+            <a class="btn btn-solid" href="#/practice-hub">Start full practice test</a>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-top">
+              <div class="card-title">Recent scores</div>
+              <a class="link" href="#/history">View all</a>
+            </div>
+            <div class="table table-recent">
+              <div class="tr th">
+                <div>Exam</div>
+                <div>Score</div>
+                <div>Date</div>
+              </div>
+              <div id="recentScores"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Quick drills</div>
+            <div class="muted">Target a topic (PRD taxonomy).</div>
+            <div class="pill-grid" id="dashboardPills"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-top">
+              <div class="card-title">Mistake log</div>
+              <a class="link" href="#/mistakes">Open</a>
+            </div>
+            <div class="muted">Resolve items after two consecutive correct attempts.</div>
+            <div class="stat-row">
+              <div class="stat">
+                <div class="stat-label">Open</div>
+                <div class="stat-value" id="mistakesOpen"></div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Resolved</div>
+                <div class="stat-value" id="mistakesResolved"></div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Weakest</div>
+                <div class="stat-value" id="mistakesWeakest"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Resume</div>
+            <div class="muted">Drafts autosave every 30 seconds.</div>
+            <div class="resume-card" id="resumeCard"></div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-test">
+      <section class="container page page-test">
+        <div class="test-session-header">
+          <div class="test-session-title" id="examSessionTitle">Practice Exam 1 — Form A</div>
+          <div class="test-session-meta" id="examSessionMeta">114 questions • Part 1 ELA, Part 2 Math</div>
+        </div>
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Timed practice</h2>
+            <p class="page-subtitle" id="testPageSubtitle">114 questions (57 ELA + 57 Math) • autosave • flag for review</p>
+          </div>
+          <div class="row-actions">
+            <div class="timer" id="timer">03:00:00</div>
+            <button class="btn btn-ghost" id="saveDraftBtn" type="button">Save draft</button>
+            <button class="btn btn-solid" id="submitTestBtn" type="button">Submit</button>
+          </div>
+        </div>
+
+        <div class="test-layout">
+          <aside class="sidebar">
+            <div class="sidebar-title">Questions</div>
+            <div class="nav-scroll" id="qNav"></div>
+            <div class="sidebar-foot">
+              <div class="legend">
+                <span class="dot dot-ans"></span> Answered
+                <span class="dot dot-flag"></span> Flagged
+              </div>
+            </div>
+          </aside>
+
+          <div class="card test-card">
+            <div class="test-top">
+              <div class="chip" id="qMeta"></div>
+              <div class="test-actions">
+                <button class="btn btn-ghost" id="flagBtn" type="button">Flag</button>
+                <button class="btn btn-ghost" id="prevBtn" type="button">Prev</button>
+                <button class="btn btn-solid" id="nextBtn" type="button">Next</button>
+              </div>
+            </div>
+
+            <div id="passageWrap" class="passage-wrap is-hidden">
+              <div class="passage-label" id="passageLabel"></div>
+              <div class="passage-text serif" id="passageText"></div>
+            </div>
+
+            <div class="q">
+              <div class="q-text" id="qText"></div>
+              <div class="choices" id="choices"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal-backdrop" id="submitModal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="submitTitle">
+          <div class="modal-title" id="submitTitle">Are you sure you want to submit?</div>
+          <div class="modal-copy">You can’t change answers after submitting. Your results will be saved.</div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" id="cancelSubmitBtn" type="button">Cancel</button>
+            <button class="btn btn-solid" id="confirmSubmitBtn" type="button">Submit</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="tpl-results">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Results</h2>
+            <p class="page-subtitle" id="resultsExamLabel"></p>
+          </div>
+          <div class="row-actions">
+            <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+            <a class="btn btn-solid" id="resultsTryAgain" href="#/test-select">Try again</a>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Score</div>
+            <div class="score-stack" id="scoreStack"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Sections</div>
+            <div class="bars" id="sectionBars"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Review missed questions</div>
+          <div class="muted">Grouped by passage where applicable.</div>
+          <div class="review" id="reviewList"></div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-drill">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Drill mode</h2>
+            <p class="page-subtitle">Choose a subject and topic (SHSAT taxonomy).</p>
+          </div>
+          <div class="row-actions">
+            <a class="btn btn-ghost" href="#/practice-hub">Practice hub</a>
+            <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Pick a drill</div>
+            <div class="form">
+              <label class="label">Subject</label>
+              <div class="seg" id="drillSubjectSeg"></div>
+              <label class="label">Topic</label>
+              <select class="select" id="drillTopic"></select>
+              <button class="btn btn-solid btn-lg" id="startDrillBtn" type="button">Start drill</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Session</div>
+            <div class="muted" id="drillHint">Start a drill to begin.</div>
+            <div class="drill" id="drillArea"></div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-history">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Score history</h2>
+            <p class="page-subtitle">All completed practice tests.</p>
+          </div>
+          <div class="row-actions">
+            <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+            <a class="btn btn-solid" href="#/test-select">New test</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table table-history">
+            <div class="tr th">
+              <div>Exam</div>
+              <div>Date</div>
+              <div>Score</div>
+              <div>Time</div>
+              <div></div>
+            </div>
+            <div id="historyRows"></div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-mistakes">
+      <section class="container page">
+        <div class="page-header row">
+          <div>
+            <h2 class="page-title">Mistake log</h2>
+            <p class="page-subtitle">Your weak-spots queue.</p>
+          </div>
+          <div class="row-actions">
+            <a class="btn btn-ghost" href="#/dashboard">Dashboard</a>
+            <button class="btn btn-solid" id="drillMistakesBtn" type="button">Drill my mistakes</button>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Filters</div>
+            <div class="form">
+              <label class="label">Subject</label>
+              <div class="seg" id="mistakeSubjectSeg"></div>
+              <label class="label">Topic</label>
+              <select class="select" id="mistakeTopic"></select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Saved questions</div>
+            <div class="muted">Mark resolved after two consecutive correct attempts.</div>
+            <div class="mistakes" id="mistakesList"></div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

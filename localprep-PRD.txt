@@ -1,0 +1,602 @@
+# LocalPrep — Product Requirements Document (PRD)
+### Version 2.0 — Updated with Practice Test Integration & Bug Fixes
+
+---
+
+## 1. What is LocalPrep?
+
+LocalPrep is a free, clean, minimal web app for students preparing for
+high-stakes city-specific exams. It launches SHSAT-focused but is
+architected from day one to support any major city exam (TACHS, Chicago
+SEHS, etc.) without rebuilding the platform.
+
+The goal: be the best free SHSAT prep resource in NYC, then expand city by city.
+
+---
+
+## 2. Tech Stack
+
+| Layer          | Tool                   | Job                                       |
+|----------------|------------------------|-------------------------------------------|
+| Frontend       | Next.js + Tailwind CSS | Pages, UI, routing                        |
+| Backend / DB   | Convex                 | Database, auth, serverless functions      |
+| Hosting        | Vercel                 | Deploys the site to the internet for free |
+| Auth           | Convex Auth (Google)   | Google login only                         |
+
+---
+
+## 3. Team
+
+- 2 developers (solo + 1 partner)
+- Building in Cursor with AI assistance
+- No budget — using free tiers of all tools
+
+---
+
+## 4. Target Users (Priority Order)
+
+1. 8th graders cramming for the SHSAT (primary)
+2. 7th graders starting early
+3. Parents researching options for their kids
+4. Teachers and tutors
+
+---
+
+## 5. Design Language
+
+- **Vibe:** Clean and minimal — think Notion, Linear, Vercel
+- **Colors:** White/off-white background, dark text, one subtle accent color
+- **Typography:** Sharp, modern — nothing flashy
+- **Spacing:** Generous whitespace, uncluttered
+- **NO:** Gradients, neon colors, cluttered dashboards, busy animations
+- **YES:** Quiet confidence, lots of breathing room, fast feel
+
+---
+
+## 6. Pages (MVP)
+
+### 6.1 Landing Page (`/`)
+- Hero section: tagline, short description, "Start Practicing Free" CTA
+- Features section: 3–4 key features with icons
+- "No signup needed to try" messaging
+- Minimal footer
+- **[FIX]** "Start Practice" button at the top of the landing page must redirect
+  unauthenticated users to `/login` (Google sign-in) before proceeding.
+  It should NOT allow anonymous access to the test flow from this button.
+
+### 6.2 Auth (`/login`)
+- Google Sign-In button only
+- **[FIX]** Center the sign-in button vertically and horizontally on the page
+- **[FIX]** Remove the "prototype toggle" that locally simulates a signed-in state.
+  All auth must flow through Convex Auth (Google OAuth) — no fake/local state toggling.
+- Clean, centered card layout
+- Redirect to `/dashboard` after successful login
+- **[SECURITY]** See Section 15 for full auth hardening requirements
+
+### 6.3 Dashboard (`/dashboard`)
+- Welcome message with user's first name
+- "Start Full Practice Test" button (most prominent)
+  - **[FIX]** Clicking this button leads to `/practice-hub` (new page — see 6.4),
+    not directly to a practice exam
+- Recent test scores section (last 3 sessions)
+  - **[FIX]** Each score entry must be a clickable button linking to its
+    corresponding full results page (`/results/[sessionId]`)
+  - Each entry should display the exam number (e.g. "Practice Exam 1") and score
+- Quick topic drill shortcuts
+- Mistake Log shortcut (link to `/mistakes`)
+- Exam selector (currently only SHSAT — built to add more later)
+
+### 6.4 Practice Hub (`/practice-hub`) — NEW PAGE
+- Replaces the old behavior where "Start Practice" went directly into an exam
+- Presents two clear choices:
+  1. **Practice Questions** — topic-based drill mode (`/drill`)
+  2. **Practice Tests** — full timed exams (leads to `/test-select`)
+- Clean card layout, one call-to-action per choice
+- Requires authentication (redirect to `/login` if not signed in)
+
+### 6.5 Test Selection (`/test-select`) — NEW PAGE
+- Lists all available practice exams as selectable cards
+- Each card shows: Exam name (e.g. "Practice Exam 1"), number of questions (114),
+  time limit (3 hours), and whether the student has already taken it
+- Selecting an exam starts that exam session and routes to `/test/[examId]`
+- Requires authentication
+
+### 6.6 Practice Test (`/test/[examId]`)
+- **[FIX] Total question count:** 114 questions total (57 Math + 57 ELA)
+- Structure mirrors official SHSAT format:
+  - **Part 1 — ELA** (57 questions):
+    - Scrambled Paragraphs
+    - Logical Reasoning
+    - Reading Comprehension (Passages with 5+ questions each, Fiction & Nonfiction)
+    - Vocabulary in Context
+  - **Part 2 — Math** (57 questions)
+- **[FIX] Passage-based questions:** Reading passages must appear as a block of text
+  with multiple questions (typically 5–6) tied to that passage. The passage remains
+  visible on screen while the student answers its associated questions. The question
+  navigator must group passage questions under their passage label.
+- 3-hour countdown timer (10,800 seconds)
+- Question navigator sidebar (jump to any question; shows passage groupings)
+- Flag questions for review
+- Submit button with confirmation modal ("Are you sure you want to submit?")
+- **[FIX]** The exam number must be stored and displayed in the session header
+  (e.g. "Practice Exam 1 — Form A")
+
+### 6.7 Results (`/results/[sessionId]`)
+- Score display — **[FIX]** format must be:
+  - ELA: X / 57
+  - Math: X / 57
+  - Total: X / 114
+  - NOT "X out of questions answered" — always denominator 57 per section, 114 total
+- Breakdown by section (Math / ELA)
+- Breakdown by topic (e.g. algebra, geometry, scrambled paragraphs, reading comp)
+- For passage-based questions: group wrong answers under their passage title
+- List of wrong answers with correct answer shown
+- AI-generated explanation per wrong answer (Phase 2)
+- "Try Again" and "Go to Dashboard" buttons
+- "Add to Mistake Log" button per wrong answer
+
+### 6.8 Drill Mode (`/drill`)
+- Pick a subject (Math or ELA)
+- **[FIX]** Topics must use the specific categories defined below in Section 11
+  (e.g. "Circles", "Permutation & Combination" — not vague labels)
+- Answer questions one at a time
+- Immediate feedback after each answer (right/wrong + explanation)
+- For ELA reading comp questions: show the full passage above the question
+- Session ends when user exits or finishes topic
+
+### 6.9 Score History (`/history`)
+- Table of all past test sessions
+- **[FIX]** Each row must display: Exam # (e.g. "Practice Exam 1"), date, score
+  (formatted as X/114), time taken
+- Click any session to see full results breakdown (`/results/[sessionId]`)
+
+### 6.10 Mistake Log (`/mistakes`)
+- List of all saved wrong questions grouped by subject and topic
+- Each card shows: question preview, topic tag, times attempted
+- "Drill My Mistakes" button — starts a drill using only these questions
+- "Mark Resolved" button per question
+- Filter by subject (Math / ELA) or topic
+
+---
+
+## 7. Data Models
+
+### Users
+```
+- id
+- name
+- email
+- created_at
+- google_id
+```
+
+### Exams
+```
+- id
+- name             (e.g. "Practice Exam 1 — Form A")
+- exam_number      (integer, e.g. 1 — displayed in history and session headers)
+- city             (e.g. "New York City")
+- total_questions  (114)
+- ela_questions    (57)
+- math_questions   (57)
+- time_limit_seconds (10800)
+- description
+```
+
+### Questions
+```
+- id
+- exam_id          (links to Exams)
+- subject          ("math" | "ela")
+- topic            (specific — see Section 11 for full taxonomy)
+- passage_id       (nullable — links to Passages for reading comp questions)
+- passage_order    (nullable integer — question's position within a passage group)
+- difficulty       (1–5)
+- question_text
+- choices          (array of 4–5 strings)
+- correct_answer   (index 0–4)
+- explanation      (text, shown after answering)
+- source           ("official_doe" | "ai_generated" | "contributed")
+```
+
+### Passages
+```
+- id
+- exam_id
+- subject          ("ela")
+- topic            ("reading_comp_fiction" | "reading_comp_nonfiction")
+- title            (e.g. "The Development of Flower Color")
+- passage_text     (full text of the reading passage)
+- question_count   (number of questions linked to this passage — typically 5–6)
+- line_numbers     (boolean — whether passage has numbered lines, as in official SHSAT)
+```
+
+### Test Sessions
+```
+- id
+- user_id
+- exam_id
+- exam_number      (denormalized for display in history, e.g. 1)
+- score            (total correct out of 114)
+- ela_score        (correct out of 57)
+- math_score       (correct out of 57)
+- total_questions  (always 114)
+- time_taken_seconds
+- date
+- answers          (array of {question_id, selected_answer, is_correct})
+- draft_answers    (array of {question_id, selected_answer} — saves in-progress)
+- time_remaining_seconds
+- completed        (boolean)
+- last_saved_at
+```
+
+**Mid-Test Auto-Save Behavior (unchanged from v1):**
+- Draft answers and remaining time are auto-saved to Convex every 30 seconds
+- If user exits mid-test, session stays with completed = false
+- On return to `/test/[examId]`, check for incomplete session
+- If found, show "Resume your test?" prompt with time remaining
+- If resume: load draft_answers, start timer from time_remaining_seconds
+- If start fresh: delete old incomplete session, create new one
+
+### Drill Sessions
+```
+- id
+- user_id
+- exam_id
+- subject
+- topic
+- questions_answered
+- correct_count
+- date
+```
+
+### Mistake Log
+```
+- id
+- user_id
+- question_id
+- exam_id
+- added_at
+- times_seen
+- times_correct    (consecutive correct answers)
+- resolved         (boolean — true when times_correct hits 2)
+```
+
+---
+
+## 8. MVP Feature List
+
+| Feature                                  | Priority | Status   |
+|------------------------------------------|----------|----------|
+| Google login / signup (hardened)         | P0       | To build |
+| 114-question timed practice test         | P0       | To build |
+| Passage-based reading comp questions     | P0       | To build |
+| Practice Hub page (test vs. drill choice)| P0       | To build |
+| Test selection page (choose exam #)      | P0       | To build |
+| Score results page (X/57 per section)    | P0       | To build |
+| Score history with exam # column         | P1       | To build |
+| Topic-based drill mode (specific topics) | P1       | To build |
+| Mistake Log                              | P1       | To build |
+| AI explanation per wrong answer          | P2       | To build |
+| Exam selector (SHSAT only now)           | P1       | To build |
+| Rate limiting on all endpoints           | P0       | To build |
+| Input validation & sanitization          | P0       | To build |
+| Secure API key handling                  | P0       | To build |
+
+P0 = must have at launch | P1 = should have at launch | P2 = nice to have / week 2
+
+---
+
+## 9. Post-MVP (Do NOT Build Yet)
+
+- Leaderboard
+- Payments / subscription / freemium
+- Mobile app
+- AI chat tutor
+- Parent dashboard
+- Additional exams (TACHS, Chicago SEHS, etc.)
+- Social sharing of scores
+
+---
+
+## 10. Multi-Exam Architecture Notes
+
+Every data model includes an `exam_id` and `exam_number` field. Adding a new exam is:
+1. Insert a new row in the Exams table with the next exam_number
+2. Add questions (and passages) tagged to that exam_id
+3. It appears automatically in the test selection page and exam dropdown
+
+No rebuilding. No refactoring. Just data.
+
+---
+
+## 11. Question Taxonomy (SHSAT)
+
+All questions must be tagged to a specific topic from the lists below.
+Vague labels like "ELA" or "Math" are not acceptable topic values.
+
+### Math Topics
+| Topic Slug                  | Display Name                    |
+|-----------------------------|----------------------------------|
+| arithmetic_number_properties | Arithmetic & Number Properties  |
+| algebra_functions           | Algebra & Functions              |
+| geometry_measurement        | Geometry & Measurement           |
+| circles                     | Circles                          |
+| triangles                   | Triangles                        |
+| coordinate_geometry         | Coordinate Geometry              |
+| statistics_probability      | Statistics & Probability         |
+| permutation_combination     | Permutation & Combination        |
+| word_problems               | Word Problems                    |
+| ratios_proportions          | Ratios & Proportions             |
+| fractions_decimals_percents | Fractions, Decimals & Percents   |
+| prime_factorization         | Prime Factorization              |
+| inequalities                | Inequalities                     |
+| grid_in                     | Grid-In (student-produced)       |
+
+### ELA Topics
+| Topic Slug                  | Display Name                             |
+|-----------------------------|-------------------------------------------|
+| scrambled_paragraphs        | Scrambled Paragraphs                     |
+| logical_reasoning           | Logical Reasoning                        |
+| reading_comp_fiction        | Reading Comprehension — Fiction          |
+| reading_comp_nonfiction     | Reading Comprehension — Nonfiction       |
+| vocabulary_in_context       | Vocabulary in Context                    |
+
+---
+
+## 12. Practice Test Question Bank — Exam 1 (Form A)
+
+Sourced from the official NYC DOE SHSAT handbook (Form A).
+This section maps every question from the uploaded practice test to
+its topic, so they can be inserted into the Questions and Passages tables.
+
+### 12.1 Passages (ELA — Reading Comprehension)
+
+| Passage ID | Title                              | Topic                    | Questions  | Notes                         |
+|------------|-------------------------------------|--------------------------|------------|-------------------------------|
+| P1         | The Development of Flower Color     | reading_comp_nonfiction  | Q21–Q26    | Has numbered lines (65 lines) |
+| P2         | The Concealed Camera                | reading_comp_nonfiction  | Q27–Q32    | Has numbered lines (70 lines) |
+| P3         | The Year Without a Summer           | reading_comp_nonfiction  | Q33–Q38    | Has numbered lines (70 lines) |
+| P4         | Neoclassicism & Jacques-Louis David | reading_comp_nonfiction  | Q39–Q44    | Has numbered lines (50 lines) |
+| P5         | The 1960 Presidential Debates       | reading_comp_nonfiction  | Q45–Q50    | Has numbered lines (65 lines) |
+
+### 12.2 ELA Questions (Q21–Q50, Form A)
+
+All questions below belong to exam_id = 1 (Form A), subject = "ela".
+
+**Passage 1 — The Development of Flower Color (Q21–Q26)**
+
+| Q# | Topic                   | Correct | Question Summary                                           |
+|----|-------------------------|---------|-------------------------------------------------------------|
+| 21 | reading_comp_nonfiction | E       | Main idea: how colorful blossoms developed                 |
+| 22 | reading_comp_nonfiction | K       | Pale white blossoms w/ strong scent → night-flying moths   |
+| 23 | reading_comp_nonfiction | A       | Blue flowers are rare because fewer mutations produced them |
+| 24 | reading_comp_nonfiction | G       | 150M yrs ago flowers green/white — only chlorophyll pigment|
+| 25 | reading_comp_nonfiction | E       | Birds/insects fly plant-to-plant to search for nectar      |
+| 26 | reading_comp_nonfiction | H       | "Outside assistance" = wind, water, or flying creatures    |
+
+**Passage 2 — The Concealed Camera (Q27–Q32)**
+
+| Q# | Topic                   | Correct | Question Summary                                            |
+|----|-------------------------|---------|--------------------------------------------------------------|
+| 27 | reading_comp_nonfiction | D       | Main idea: historical info about the concealed camera        |
+| 28 | reading_comp_nonfiction | K       | Detective cameras popular with amateur photographers         |
+| 29 | reading_comp_nonfiction | D       | Original purpose: photograph unsuspecting subjects           |
+| 30 | reading_comp_nonfiction | J       | Mirror camera: photograph scene at right angle to view       |
+| 31 | reading_comp_nonfiction | A       | Box camera abandoned when people caught on to deception      |
+| 32 | reading_comp_nonfiction | G       | "Idea" = taking photographs from above                       |
+
+**Passage 3 — The Year Without a Summer (Q33–Q38)**
+
+| Q# | Topic                   | Correct | Question Summary                                            |
+|----|-------------------------|---------|--------------------------------------------------------------|
+| 33 | reading_comp_nonfiction | B       | Main idea: strange summer weather of 1816 and its cause      |
+| 34 | reading_comp_nonfiction | F       | Farmers replanted because they believed cold wouldn't last   |
+| 35 | reading_comp_nonfiction | C       | Winter 1816–17: NE faced fruit/vegetable shortages           |
+| 36 | reading_comp_nonfiction | J       | "Global nature of weather" — conditions in one place affect another |
+| 37 | reading_comp_nonfiction | B       | Tambora theory supported if other regions also had cold 1816 |
+| 38 | reading_comp_nonfiction | K       | Bessel's theory: dust blocked warming rays of the sun        |
+
+**Passage 4 — Neoclassicism & David (Q39–Q44)**
+
+| Q# | Topic                   | Correct | Question Summary                                            |
+|----|-------------------------|---------|--------------------------------------------------------------|
+| 39 | reading_comp_nonfiction | E       | Main idea: David's Neoclassic painting expressed political mood |
+| 40 | reading_comp_nonfiction | G       | Critics gave negative reviews — style too stark/severe       |
+| 41 | reading_comp_nonfiction | C       | Neoclassical subject: soldier defending city gates (heroic)  |
+| 42 | reading_comp_nonfiction | F       | Oath of Horatii depicts brothers pledging allegiance to Rome |
+| 43 | reading_comp_nonfiction | B       | Neoclassicism foreshadowed the French Revolution             |
+| 44 | reading_comp_nonfiction | H       | Middle class read painting as call to French patriotism      |
+
+**Passage 5 — The 1960 Presidential Debates (Q45–Q50)**
+
+| Q# | Topic                   | Correct | Question Summary                                            |
+|----|-------------------------|---------|--------------------------------------------------------------|
+| 45 | reading_comp_nonfiction | D       | Main idea: the presidential debates of 1960                  |
+| 46 | reading_comp_nonfiction | G       | Non-political viewers tuned in because TV never used this way|
+| 47 | reading_comp_nonfiction | A       | First debate limited to domestic issues → American industry  |
+| 48 | reading_comp_nonfiction | K       | Evidence for Nixon radio win: he was more experienced/known  |
+| 49 | reading_comp_nonfiction | C       | Kennedy benefited by appearing charming, poised, confident   |
+| 50 | reading_comp_nonfiction | H       | Without TV debates, Nixon would have had better chance       |
+
+### 12.3 Math Questions (Q51–Q100, Form A)
+
+All questions below belong to exam_id = 1 (Form A), subject = "math".
+
+| Q#  | Topic                        | Correct | Question Summary                                         |
+|-----|------------------------------|---------|----------------------------------------------------------|
+| 51  | fractions_decimals_percents  | E       | 4/5 of P = 48; find 3/5 of P → 36                       |
+| 52  | ratios_proportions           | G       | Unit conversion: sinde/ricks/dalts → 2.3 dalts per rick  |
+| 53  | statistics_probability       | D       | Mean 15 pts over 3 games, 4th game 27; new mean = 18     |
+| 54  | arithmetic_number_properties | G       | 0.00102 = 102/N → N = 100,000                            |
+| 55  | statistics_probability       | C       | Pie chart: walkers minus cyclists = 2,700 people         |
+| 56  | algebra_functions            | K       | Age problem: Carmen = 30 − n                             |
+| 57  | coordinate_geometry          | A       | Number line midpoint distance problem → 12 units         |
+| 58  | coordinate_geometry          | H       | Coordinate addition: locate (c+a, d+b) on graph → T     |
+| 59  | arithmetic_number_properties | E       | (−5+1)² / 17³ simplification → 2 (typo in source: E)    |
+| 60  | prime_factorization          | J       | GCF of 2,205 and 3,675 → 735                             |
+| 61  | algebra_functions            | E       | Equation with large powers → x = 123                    |
+| 62  | statistics_probability       | F       | Median of primes between 6 and 36 → 17                  |
+| 63  | ratios_proportions           | A       | OJ/grapefruit juice: add until GJ = 1/3 → add 2 oz      |
+| 64  | statistics_probability       | G       | Table: blond hair OR brown eyes but not both → 33        |
+| 65  | ratios_proportions           | B       | Scale drawing: 36 inches → 0.75 in but check answer E   |
+| 66  | fractions_decimals_percents  | J       | 40% of club must be 7th graders; how many more? → 10    |
+| 67  | permutation_combination      | C       | 2-digit even numbers from 7,8,9 no repeat → 2           |
+| 68  | ratios_proportions           | H       | Fuel mix 5:6 gasoline:oil; ounces for 33 oz total → 15  |
+| 69  | geometry_measurement         | B       | Angle problem with parallel lines → x = 45              |
+| 70  | ratios_proportions           | H       | Shingles rate: 3 bundles/96 sq ft; 416 sq ft → 13       |
+| 71  | arithmetic_number_properties | B       | Integers between 5/2 and 20/3 → 4 integers              |
+| 72  | prime_factorization          | K       | Prime factorization of 714 → 2×3×7×17                   |
+| 73  | arithmetic_number_properties | D       | Odd/even parity proof: S must be even                   |
+| 74  | coordinate_geometry          | G       | Midpoint of AC and BD on number line; EF = 2 units       |
+| 75  | fractions_decimals_percents  | B       | 6% tax on sale vs regular price difference → $0.02      |
+| 76  | word_problems                | K       | Guard schedule: Roberto's 3rd watch at 12:00 p.m.       |
+| 77  | circles                      | B       | Front tire 3 revolutions = 1 back tire; radius ratio → 3|
+| 78  | fractions_decimals_percents  | H       | 30% off $2.90 bag, price per ounce → $0.17              |
+| 79  | arithmetic_number_properties | B       | (−6)−(−5)+4−3−11 = −5 (be careful with negatives)       |
+| 80  | ratios_proportions           | G       | Blue:white = 8:3; 6 gal blue → total = 8.25 gal         |
+| 81  | fractions_decimals_percents  | D       | Non-repeating decimal sum: 1/4 + 1/5 = 9/20 ✓          |
+| 82  | arithmetic_number_properties | K       | Unit conversion: 1000 cm³ = ? mm³ → 1,000,000,000       |
+| 83  | statistics_probability       | C       | Marbles: after 5 removed, P(green)=0.5 → 3 red removed  |
+| 84  | word_problems                | F       | Plane speeds: leg2 − leg1 = 110 mph faster              |
+| 85  | algebra_functions            | B       | Tank 1/3 full, add 21 gal → 4/5 full; capacity = 45    |
+| 86  | algebra_functions            | H       | Age problem: Tom = 1/4 Jordan now, 1/3 in 2 yrs → Jordan 12|
+| 87  | permutation_combination      | B       | $0.75 with ≥1 nickel, dime, quarter → 4 ways            |
+| 88  | geometry_measurement         | K       | Tent cross-section volume = 216 cu ft; depth d = 8 ft   |
+| 89  | word_problems                | B       | Reading rate: 20 pages/30 min; 130 more pages → 2 1/6 hr|
+| 90  | arithmetic_number_properties | J       | Set R ∩ not T: integers 10–81 inclusive → 71            |
+| 91  | algebra_functions            | A       | Speed increasing 1.5 mph per half min; min above 55 → 3⅓ |
+| 92  | arithmetic_number_properties | F       | Positive 2-digit numbers divisible by 4 → 22            |
+| 93  | algebra_functions            | A       | Julia's spending in terms of x and y → y/4 + x/12       |
+| 94  | word_problems                | F       | Arnold's weekly profit on 25 chairs → $1,875            |
+| 95  | statistics_probability       | B       | Weighted mean of 4 chefs + 8 waiters → $54,000          |
+| 96  | algebra_functions            | H       | Max value of 1 − x² → 1 (when x = 0)                   |
+| 97  | word_problems                | B       | Cube tank half full; net fill 5 cu ft/min → overflow 10:00 a.m. |
+| 98  | ratios_proportions           | J       | Ad space pricing: equal #s of ¼, ½, full pages, $11,500 → 17¼ pages |
+| 99  | geometry_measurement         | D       | Tile cost for 12×16 ft floor with 8-in tiles → $2,304   |
+| 100 | inequalities                 | H       | Number line for −4 < x/2 < 2 → −8 < x < 4              |
+
+---
+
+## 13. Security Requirements (Auth Hardening)
+
+> Acting as a senior security engineer, the following must be implemented
+> before any public launch.
+
+### 13.1 Authentication
+
+- **Remove prototype toggle:** Delete any code that locally toggles a "signed in"
+  state. All auth must flow through Convex Auth (Google OAuth).
+- **Session expiry:** Sessions must expire after a configurable idle period
+  (default: 24 hours of inactivity). Implement server-side session invalidation.
+- **Email verification:** Enable email verification in Convex Auth settings.
+  Unverified accounts should not access test data.
+- **No secrets on the frontend:** API keys, session secrets, and auth tokens must
+  never be exposed in client-side code or browser network requests. Store in
+  Convex environment variables only.
+- **Password reset tokens:** If password reset is ever added, tokens must expire
+  within 15 minutes and be single-use.
+- **Sign-in button centering:** The Google Sign-In button must be vertically and
+  horizontally centered in the login card using Flexbox (`items-center justify-center`).
+
+### 13.2 Rate Limiting
+
+Apply rate limiting on all public endpoints. Use IP-based limiting for unauthenticated
+routes and user-based limiting for authenticated routes.
+
+Recommended defaults:
+- Login endpoint: 10 attempts per 15 minutes per IP (return 429 with Retry-After header)
+- API endpoints (unauthenticated): 60 requests per minute per IP
+- API endpoints (authenticated): 300 requests per minute per user
+
+Graceful 429 responses must include a `Retry-After` header and a human-readable message.
+
+### 13.3 Input Validation & Sanitization
+
+Apply schema-based validation on ALL user inputs server-side using a library such
+as Zod or Convex's built-in argument validators.
+
+Rules:
+- Type checks on every argument (string, number, boolean, array)
+- Length limits: question text ≤ 2000 chars, answer choices ≤ 500 chars each,
+  user name ≤ 100 chars, email ≤ 254 chars
+- Reject any fields not in the declared schema (strip unknown fields)
+- Sanitize any text that will be rendered in HTML (escape `<`, `>`, `"`, `'`, `&`)
+- Validate numeric ranges (e.g. selected_answer must be 0–4, difficulty 1–5)
+
+### 13.4 Secure API Key Handling
+
+- Remove any hard-coded API keys from source code immediately
+- All keys must live in Vercel environment variables (server-side only)
+- Convex environment variables for server functions; never passed to the browser
+- No key values in `.env.local` committed to version control (add to `.gitignore`)
+- Rotate any keys that were previously exposed in the codebase
+
+---
+
+## 14. Bug Tracker & Fix Log
+
+| # | Location       | Bug Description                                                        | Status  |
+|---|----------------|------------------------------------------------------------------------|---------|
+| 1 | `/login`       | Prototype toggle fakes auth locally — remove entirely                  | To fix  |
+| 2 | `/login`       | Sign-in button not centered — apply flex centering                     | To fix  |
+| 3 | `/dashboard`   | "Start Practice" goes directly to exam — route to `/practice-hub` first| To fix  |
+| 4 | `/dashboard`   | Recent scores are static text — make each one a link to `/results/[id]`| To fix  |
+| 5 | `/test`        | Only 57 questions — expand to 114 (57 Math + 57 ELA)                  | To fix  |
+| 6 | `/results`     | Score shows "X / questions answered" — change to "X / 57" per section | To fix  |
+| 7 | `/drill`       | Topics are vague — use specific taxonomy from Section 11               | To fix  |
+| 8 | `/history`     | No exam # column — add exam name/number to each row                    | To fix  |
+| 9 | `/test`        | No passage rendering — implement passage display for ELA reading comp  | To fix  |
+| 10| Landing page   | "Start Practice" top button doesn't gate on auth — require sign-in     | To fix  |
+| 11| All endpoints  | No rate limiting — add IP + user-based limits with 429 responses       | To fix  |
+| 12| All endpoints  | No input validation — add Zod/Convex schema validation                 | To fix  |
+| 13| Auth           | API keys possibly in frontend code — audit and move to env vars        | To fix  |
+
+---
+
+## 15. Question Bank Sources (MVP)
+
+1. Official NYC DOE released SHSAT handbooks (primary — Form A fully mapped in Section 12)
+2. AI-generated questions (Claude / GPT-4, manually reviewed)
+3. Community contributions (post-MVP)
+
+---
+
+## 16. Success Metrics
+
+- 100 registered users in first month
+- Average 2+ test sessions per user
+- Bounce rate under 50%
+- At least one piece of organic social media buzz (TikTok, Reddit, Discord)
+
+---
+
+## 17. Saved Question Log (SHSAT)
+
+A curated list of notable questions from official sources worth keeping for reference
+when generating new AI questions or checking for duplicates.
+
+### 17.1 Math — Saved Questions
+
+| # | Topic                   | Question Summary                         | Why Saved               | Source       |
+|---|-------------------------|-------------------------------------------|--------------------------|--------------|
+| 1 | ratios_proportions      | Sind/ricks/dalts unit conversion (Q52)   | Multi-step unit chain    | official_doe |
+| 2 | permutation_combination | 2-digit even from {7,8,9} no repeat (Q67)| Common trick, answer = 2 | official_doe |
+| 3 | circles                 | Front/back tire revolution ratio (Q77)   | Circumference reasoning  | official_doe |
+| 4 | algebra_functions       | Tom/Jordan age problem, 2-var (Q86)      | Classic 2-equation setup | official_doe |
+| 5 | statistics_probability  | Marble removal probability (Q83)         | Working backwards        | official_doe |
+
+### 17.2 ELA — Saved Questions
+
+| # | Topic                   | Question Summary                          | Why Saved               | Source       |
+|---|-------------------------|-------------------------------------------|--------------------------|--------------|
+| 1 | reading_comp_nonfiction | "Outside assistance" inference Q26        | Strong inference test    | official_doe |
+| 2 | reading_comp_nonfiction | Bessel's theory summary Q38               | Concise synthesis Q      | official_doe |
+| 3 | reading_comp_nonfiction | "Global nature of weather" implication Q36| Vocabulary in context    | official_doe |
+| 4 | reading_comp_nonfiction | Nixon/Kennedy TV vs. radio Q50            | Hypothetical reasoning   | official_doe |
+**ELA Topics (SHSAT):**
+- Scrambled Paragraphs (put sentences in correct logical order)
+- Logical Reasoning
+- Reading Comprehension — Fiction
+- Reading Comprehension — Nonfiction
+- Vocabulary in Context
